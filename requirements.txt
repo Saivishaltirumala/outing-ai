@@ -1,0 +1,19 @@
+fastapi==0.115.0
+uvicorn==0.30.6
+pydantic==2.9.2
+python-dotenv==1.0.1
+
+# LangChain / LangGraph
+langgraph==0.4.1
+langchain==0.3.25
+langchain-core==0.3.59
+langchain-anthropic==0.3.12
+langchain-groq==0.2.4
+langchain-google-genai==2.1.4
+
+# MCP
+mcp==1.9.2
+langchain-mcp-adapters==0.1.0
+
+# Utils
+httpx==0.28.1
