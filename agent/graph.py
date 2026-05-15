@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import time
 import functools
 from contextlib import AsyncExitStack
@@ -152,4 +153,11 @@ async def run_outing_agent(
         return result
 
     finally:
-        await exit_stack.aclose()
+        print("[AGENT] Cleaning up MCP servers...", flush=True)
+        try:
+            await asyncio.wait_for(exit_stack.aclose(), timeout=5)
+            print("[AGENT] Cleanup done", flush=True)
+        except asyncio.TimeoutError:
+            print("[AGENT] Cleanup timed out after 5s, continuing", flush=True)
+        except Exception as e:
+            print(f"[AGENT] Cleanup error (ignored): {e}", flush=True)
