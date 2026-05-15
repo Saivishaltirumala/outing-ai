@@ -1,3 +1,12 @@
+---
+title: OutingAI
+emoji: 🏖️
+colorFrom: purple
+colorTo: blue
+sdk: docker
+pinned: false
+---
+
 # OutingAI - Corporate Day Outing Planner
 
 > Tell us your office location, team size, and budget - we'll suggest the best 3 spots for lunch or an activity today.
