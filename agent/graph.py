@@ -101,13 +101,17 @@ async def run_outing_agent(
     llm_provider: str = "groq",
 ) -> dict:
     start_time = time.time()
+    print(f"[AGENT] Starting: location={location}, type={outing_type}, provider={llm_provider}", flush=True)
 
     exit_stack = AsyncExitStack()
     try:
+        print("[AGENT] Creating MCP tools...", flush=True)
         tools = await create_mcp_tools(exit_stack)
         tool_names = [t.name for t in tools]
+        print(f"[AGENT] MCP tools ready: {len(tools)} tools", flush=True)
 
         compiled_graph = await build_graph(tools)
+        print("[AGENT] Graph compiled, invoking...", flush=True)
 
         initial_state: OutingState = {
             "location": location,
@@ -129,6 +133,7 @@ async def run_outing_agent(
         }
 
         result = await compiled_graph.ainvoke(initial_state)
+        print(f"[AGENT] Graph completed, plans={len(result.get('plans', []))}", flush=True)
 
         elapsed = round(time.time() - start_time, 1)
         result["agent_info"] = {

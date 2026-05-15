@@ -36,6 +36,7 @@ async def create_mcp_tools(exit_stack: AsyncExitStack) -> list:
     all_tools = []
 
     for server_name, server_cfg in config["mcpServers"].items():
+        print(f"[MCP] Spawning server: {server_name}", flush=True)
         env = _resolve_env(server_cfg.get("env"))
         full_env = {**os.environ, **env}
 
@@ -45,16 +46,22 @@ async def create_mcp_tools(exit_stack: AsyncExitStack) -> list:
             env=full_env,
         )
 
-        stdio_transport = await exit_stack.enter_async_context(
-            stdio_client(params)
-        )
-        read_stream, write_stream = stdio_transport
-        session = await exit_stack.enter_async_context(
-            ClientSession(read_stream, write_stream)
-        )
-        await session.initialize()
+        try:
+            stdio_transport = await exit_stack.enter_async_context(
+                stdio_client(params)
+            )
+            read_stream, write_stream = stdio_transport
+            session = await exit_stack.enter_async_context(
+                ClientSession(read_stream, write_stream)
+            )
+            await session.initialize()
+            print(f"[MCP] {server_name} initialized", flush=True)
 
-        tools = await load_mcp_tools(session)
-        all_tools.extend(tools)
+            tools = await load_mcp_tools(session)
+            print(f"[MCP] {server_name} loaded {len(tools)} tools: {[t.name for t in tools]}", flush=True)
+            all_tools.extend(tools)
+        except Exception as e:
+            print(f"[MCP] ERROR spawning {server_name}: {e}", flush=True)
 
+    print(f"[MCP] Total tools loaded: {len(all_tools)}", flush=True)
     return all_tools

@@ -48,6 +48,7 @@ def _parse_places_response(raw: Any) -> list:
 
 
 async def geocode_node(state: OutingState, tools: list[BaseTool]) -> dict:
+    print(f"[NODE] geocode_node START", flush=True)
     tool_name = await _find_tool(tools, "maps_geocode", "geocode")
     if not tool_name:
         llm = get_llm(state["llm_provider"])
@@ -76,10 +77,12 @@ async def geocode_node(state: OutingState, tools: list[BaseTool]) -> dict:
             lng = result.get("longitude", result.get("lng", 0))
     else:
         lat, lng = 0, 0
+    print(f"[NODE] geocode_node END lat={lat}, lng={lng}", flush=True)
     return {"lat": lat, "lng": lng}
 
 
 async def weather_node(state: OutingState, tools: list[BaseTool]) -> dict:
+    print(f"[NODE] weather_node START", flush=True)
     lat, lng = state["lat"], state["lng"]
 
     tool_name = await _find_tool(tools, "get-forecast", "get_current_weather", "get_forecast")
@@ -104,6 +107,7 @@ async def weather_node(state: OutingState, tools: list[BaseTool]) -> dict:
         except ValueError:
             continue
 
+    print(f"[NODE] weather_node END outdoor={is_outdoor}, temp={temp}", flush=True)
     return {
         "weather_data": {
             "temperature_c": temp,
@@ -115,6 +119,7 @@ async def weather_node(state: OutingState, tools: list[BaseTool]) -> dict:
 
 
 async def lunch_search_node(state: OutingState, tools: list[BaseTool]) -> dict:
+    print(f"[NODE] lunch_search_node START", flush=True)
     lat, lng = state["lat"], state["lng"]
 
     places_result = []
@@ -136,6 +141,7 @@ async def lunch_search_node(state: OutingState, tools: list[BaseTool]) -> dict:
         })
         search_text = raw if isinstance(raw, str) else json.dumps(raw)
 
+    print(f"[NODE] lunch_search_node END places={len(places_result)}, search_len={len(search_text)}", flush=True)
     return {
         "places_raw": places_result,
         "search_results": search_text[:3000],
@@ -143,6 +149,7 @@ async def lunch_search_node(state: OutingState, tools: list[BaseTool]) -> dict:
 
 
 async def activity_search_node(state: OutingState, tools: list[BaseTool]) -> dict:
+    print(f"[NODE] activity_search_node START", flush=True)
     lat, lng = state["lat"], state["lng"]
 
     places_result = []
@@ -164,6 +171,7 @@ async def activity_search_node(state: OutingState, tools: list[BaseTool]) -> dic
         })
         search_text = raw if isinstance(raw, str) else json.dumps(raw)
 
+    print(f"[NODE] activity_search_node END places={len(places_result)}, search_len={len(search_text)}", flush=True)
     return {
         "activity_places_raw": places_result,
         "activity_search_results": search_text[:3000],
@@ -171,6 +179,7 @@ async def activity_search_node(state: OutingState, tools: list[BaseTool]) -> dic
 
 
 async def score_lunch_node(state: OutingState) -> dict:
+    print(f"[NODE] score_lunch_node START provider={state['llm_provider']}", flush=True)
     llm = get_llm(state["llm_provider"])
 
     prompt = LUNCH_SCORE_PROMPT.format(
@@ -216,10 +225,12 @@ async def score_lunch_node(state: OutingState) -> dict:
             "why_chosen": r.get("why_chosen", ""),
         })
 
+    print(f"[NODE] score_lunch_node END plans={len(plans)}", flush=True)
     return {"plans": plans}
 
 
 async def score_activity_node(state: OutingState) -> dict:
+    print(f"[NODE] score_activity_node START provider={state['llm_provider']}", flush=True)
     llm = get_llm(state["llm_provider"])
 
     prompt = ACTIVITY_SCORE_PROMPT.format(
@@ -266,10 +277,12 @@ async def score_activity_node(state: OutingState) -> dict:
             "why_chosen": a.get("why_chosen", ""),
         })
 
+    print(f"[NODE] score_activity_node END plans={len(plans)}", flush=True)
     return {"plans": plans}
 
 
 async def plan_both_node(state: OutingState) -> dict:
+    print(f"[NODE] plan_both_node START places={len(state.get('places_raw',[]))}, activities={len(state.get('activity_places_raw',[]))}", flush=True)
     llm = get_llm(state["llm_provider"])
 
     prompt = BOTH_PLAN_PROMPT.format(
@@ -299,4 +312,5 @@ async def plan_both_node(state: OutingState) -> dict:
         else:
             plans = []
 
+    print(f"[NODE] plan_both_node END plans={len(plans[:3])}", flush=True)
     return {"plans": plans[:3]}

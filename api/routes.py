@@ -54,6 +54,7 @@ async def plan_outing(request: OutingRequest):
                 detail="Invalid password. Claude requires authorized access."
             )
 
+    print(f"[ROUTE] /api/plan called: location={request.location}, type={request.outing_type.value}, provider={request.llm_provider.value}", flush=True)
     try:
         result = await run_outing_agent(
             location=request.location,
@@ -85,6 +86,7 @@ async def plan_outing(request: OutingRequest):
                 why_chosen=p.get("why_chosen", ""),
             ))
 
+        print(f"[ROUTE] Success: {len(plans)} plans", flush=True)
         return OutingResponse(
             weather=weather,
             plans=plans,
@@ -92,5 +94,6 @@ async def plan_outing(request: OutingRequest):
         )
 
     except Exception as e:
+        print(f"[ROUTE] ERROR: {e}", flush=True)
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
