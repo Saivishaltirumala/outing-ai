@@ -153,11 +153,12 @@ async def run_outing_agent(
         return result
 
     finally:
-        print("[AGENT] Cleaning up MCP servers...", flush=True)
-        try:
-            await asyncio.wait_for(exit_stack.aclose(), timeout=5)
-            print("[AGENT] Cleanup done", flush=True)
-        except asyncio.TimeoutError:
-            print("[AGENT] Cleanup timed out after 5s, continuing", flush=True)
-        except Exception as e:
-            print(f"[AGENT] Cleanup error (ignored): {e}", flush=True)
+        print("[AGENT] Scheduling MCP cleanup in background...", flush=True)
+
+        async def _safe_cleanup():
+            try:
+                await exit_stack.aclose()
+            except BaseException:
+                pass
+
+        asyncio.get_event_loop().create_task(_safe_cleanup())
